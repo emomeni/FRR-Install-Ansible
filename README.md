@@ -39,4 +39,6 @@ This playbook performs the following tasks:
    git clone https://github.com/yourusername/ansible-install-frr.git
    cd ansible-install-frr
 ```
+2. Ensure your inventory file is set up correctly. Update the `inventory` file with the list of target Ubuntu servers.
 
+3. (Optional) Modify the `install_frr.yaml` playbook file to suit your environment, especially if using different versions or repositories.
