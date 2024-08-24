@@ -1,0 +1,59 @@
+---
+- name: Install FRR on Ubuntu servers
+  hosts: all  # Specify the target group of servers
+  become: yes  # Run tasks with sudo privileges
+  vars:
+    frr_repo_url: "https://deb.frrouting.org/frr"
+    frr_repo_key_url: "https://deb.frrouting.org/frr/keys.asc"
+    frr_version: "frr-stable"
+
+  tasks:
+    - name: Ensure the playbook is running on Ubuntu
+      fail:
+        msg: "This playbook is only compatible with Ubuntu."
+      when: ansible_distribution != 'Ubuntu'
+
+    - name: Update the apt package index
+      apt:
+        update_cache: yes
+
+    - name: Install prerequisites
+      apt:
+        name: "{{ item }}"
+        state: present
+      loop:
+        - apt-transport-https
+        - gnupg
+
+    - name: Add FRR repository key
+      apt_key:
+        url: "{{ frr_repo_key_url }}"
+        state: present
+        id: "F1B9272E"  # Replace with actual key ID if needed
+
+    - name: Add FRR repository
+      apt_repository:
+        repo: "deb {{ frr_repo_url }} {{ ansible_distribution_release }} {{ frr_version }}"
+        state: present
+
+    - name: Update apt cache after adding FRR repository
+      apt:
+        update_cache: yes
+
+    - name: Install FRR package
+      apt:
+        name: frr
+        state: present
+      notify: Restart FRR service
+
+    - name: Verify FRR installation
+      command: vtysh -c "show version"
+      register: frr_output
+      failed_when: "'FreeRangeRouting' not in frr_output.stdout"
+
+  handlers:
+    - name: Restart FRR service
+      systemd:
+        name: frr
+        state: restarted
+        enabled: yes
