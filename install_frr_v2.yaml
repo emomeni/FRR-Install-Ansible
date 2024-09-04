@@ -1,0 +1,71 @@
+---
+- name: Install FRR on Ubuntu servers
+  hosts: all
+  become: yes
+  vars:
+    frr_repo_url: "https://deb.frrouting.org/frr"
+    frr_repo_key_url: "https://deb.frrouting.org/frr/keys.asc"
+    frr_version: "frr-stable"
+
+  tasks:
+    - name: Ensure the playbook is running on a compatible Ubuntu version
+      fail:
+        msg: "This playbook is only compatible with Ubuntu 18.04 or later."
+      when: ansible_distribution != 'Ubuntu' or ansible_distribution_version is version('18.04', '<')
+
+    - name: Update the apt package index
+      apt:
+        update_cache: yes
+
+    - name: Install prerequisites
+      apt:
+        name: "{{ item }}"
+        state: present
+      with_items:
+        - apt-transport-https
+        - gnupg
+
+    - name: Add FRR repository key
+      apt_key:
+        url: "{{ frr_repo_key_url }}"
+        state: present
+        id: "F1B9272E"  # Replace with actual key ID if needed
+
+    - name: Add FRR repository
+      apt_repository:
+        repo: "deb {{ frr_repo_url }} {{ ansible_distribution_release }} {{ frr_version }}"
+        state: present
+
+    - name: Update apt cache after adding FRR repository
+      apt:
+        update_cache: yes
+
+    - name: Install FRR package
+      apt:
+        name: frr
+        state: present
+      notify: Restart FRR service
+
+    - name: Verify FRR installation
+      command: vtysh -c "show version"
+      register: frr_output
+      failed_when: "'FreeRangeRouting' not in frr_output.stdout"
+
+  handlers:
+    - name: Restart FRR service
+      systemd:
+        name: frr
+        state: restarted
+        enabled: yes
+
+
+# Key Changes and Improvements:
+# Compatibility Check Enhancement: Added a version check for Ubuntu to ensure the playbook runs only on compatible versions (18.04 or later).
+# Consistency in Task Definition:
+# Used with_items instead of loop for installing prerequisites. It provides better readability for simple lists.
+# Whitespace for Readability: Added blank lines between tasks and sections to improve readability.
+# Tags for Better Control (Optional): Consider adding tags to tasks for more granular control if needed in the future.
+
+# General Improvements:
+# Improved error messaging and task descriptions for clarity.
+# Kept tasks and variables organized and easy to understand.
