@@ -11,6 +11,7 @@ This Ansible playbook automates the installation of the Free Range Routing (FRR)
 - [Verification](#verification)
 - [Troubleshooting](#troubleshooting)
 - [License](#license)
+- [Improvements](#improvements)
 
 ## Introduction
 This playbook performs the following tasks:
@@ -71,6 +72,18 @@ The output should display the installed version of FRR, confirming a successful 
 ## License
 This project is licensed under the MIT License - see the LICENSE file for details.
 
+## Improvements
+### Key Changes and Improvements in an updated version of playbook (v2):
+* Key Changes and Improvements:
+* Compatibility Check Enhancement: Added a version check for Ubuntu to ensure the playbook runs only on compatible versions (18.04 or later).
+* Consistency in Task Definition:
+* Used with_items instead of loop for installing prerequisites. It provides better readability for simple lists.
+* Whitespace for Readability: Added blank lines between tasks and sections to improve readability.
+* Tags for Better Control (Optional): Consider adding tags to tasks for more granular control if needed in the future.
+
+### General Improvements in an updated version of playbook (v2):
+* Improved error messaging and task descriptions for clarity.
+* Kept tasks and variables organized and easy to understand.
 
 
 # Explanation of the README.md Structure
